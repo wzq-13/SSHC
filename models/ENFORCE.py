@@ -13,8 +13,7 @@ from typing import Tuple, Callable, Dict
 from torch.utils.tensorboard import SummaryWriter
 from torch.func import vmap, jacrev
 import globalvar
-import matplotlib.pyplot as plt
-from utils.utils import check_polygon_intersection, get_rect_points_vectorized, visualize_data_batch_2, path_smoothness
+from utils.utils import check_polygon_intersection, get_rect_points_vectorized, path_smoothness
 from utils.prob import _create_objective_function, obj_fn, xy2xy_heading
 from models.utils import create_model
 RESULT_DIR = './test_hard2_logs'
@@ -69,36 +68,29 @@ class NeuralProjection(nn.Module):
         
         def single_constraint_fn(y_single, data_single):
             y_fake_batch = y_single.unsqueeze(0)
-            
             data_fake_batch = {
                 k: (v.unsqueeze(0) if isinstance(v, torch.Tensor) else v)
                 for k, v in data_single.items()
             }
-            
             constraints_output = constraints_fn(data_fake_batch, y_fake_batch)
-            
             return constraints_output.squeeze(0)
 
         data_in_dims = {k: 0 for k in data.keys()}
-        
         batch_jac_fn = vmap(jacrev(single_constraint_fn, argnums=0), in_dims=(0, data_in_dims))
-        
         B = batch_jac_fn(y, data)
-        
         return B
-        
+    @torch.compile
     def forward(self, data: Dict, y_pred: torch.Tensor, 
                 constraints_fn: Callable) -> Tuple[torch.Tensor, torch.Tensor]:
-        constraints = constraints_fn(data, y_pred)
+        constraints = constraints_fn(data, y_pred) # value: h(y)
         B = self.compute_batch_jacobian(data, y_pred, constraints_fn) 
-        BB_T = torch.bmm(B, B.transpose(1, 2))
+        BB_T = torch.bmm(B, B.transpose(1, 2)) # (Batch, 10, 10)
         jitter = 1e-6 * torch.eye(BB_T.shape[1], device=BB_T.device).unsqueeze(0)
         L = torch.linalg.cholesky(BB_T + jitter)
         target = constraints.unsqueeze(-1) 
         z = torch.cholesky_solve(target, L) 
         delta = torch.bmm(B.transpose(1, 2), z).squeeze(-1)
         y_proj = y_pred - delta
-        
         return y_proj
     
 
@@ -165,14 +157,13 @@ class ENFORCE(nn.Module):
         return y_final, info, y_pred
  
 class ENFORCE_Trainer:
-    def __init__(self, config, train_loader, val_loader, test_loader=None, save_dir=None, load_dir=None, log_dir=None, model='MLP'):
+    def __init__(self, config, train_loader, val_loader, test_loader=None, save_dir=None, load_dir=None, log_dir=None):
         self.config = config
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
         self.save_dir = save_dir
-        self.model_type = model
-        self.constraint_func = _create_objective_function(self.config['scale'], mode='per_sample')
+        self.constraint_func = _create_objective_function()
         if load_dir is not None:
             checkpoint = torch.load(load_dir, map_location=DEVICE)
             load_config = checkpoint.get('config', None)
@@ -180,7 +171,7 @@ class ENFORCE_Trainer:
             self.config['dropout'] = load_config.get('dropout', self.config['dropout'])
             self.config['output_dim'] = load_config.get('output_dim', self.config['output_dim'])
             
-        backbone = create_model(self.config, model_type=model, device=DEVICE)
+        backbone = create_model(self.config, device=DEVICE)
         if self.save_dir is not None:
             os.makedirs(self.save_dir, exist_ok=True)
         if load_dir is not None:
@@ -210,7 +201,7 @@ class ENFORCE_Trainer:
         self.writer = SummaryWriter(log_dir=log_dir) if log_dir is not None else None
     def compute_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_final: torch.Tensor) -> Dict[str, torch.Tensor]:
         """Computes the loss for a batch."""
-        obj_loss_pred = obj_fn(X_batch, Y_pred, config=self.config, model_type='pred')
+        obj_loss_pred = obj_fn(X_batch, Y_pred, config=self.config)
         proj_loss = torch.mean((Y_final.detach() - Y_pred)**2)
         constraint_residuals = self.constraint_func(X_batch, Y_final)
         constraint_residuals = torch.mean(torch.abs(constraint_residuals))
@@ -272,11 +263,8 @@ class ENFORCE_Trainer:
             if (epoch + 1) % self.config['eval_step'] == 0:
                 val_metrics = self.evaluate(self.val_loader)
                 print(f'--- Validation Loss: {val_metrics["total_loss"]:.4f}, obj Loss: {val_metrics["obj_loss"]:.4f}, Proj Loss: {val_metrics["proj_loss"]:.4f}, Constraint Residual: {val_metrics["constraint_residuals"]:.4f}, Avg Projection Depth: {val_metrics["projection_depth"]:.2f}')
-            if (epoch) % self.config['visual_step'] == 0:
-                self.test_visualization(save_path='imgs/hard_test28002')
             if (epoch + 1) % self.config['save_step'] == 0:
                 self._save_model(epoch=epoch)
-        self.test_visualization(save_path='imgs/hard2')
         self._save_model(epoch=num_epochs)
 
     def compute_score(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_final: torch.Tensor) -> Dict[str, torch.Tensor]:
@@ -438,23 +426,6 @@ class ENFORCE_Trainer:
             
         return eval_metrics
     
-    def test_visualization(self, save_path: str):
-        """Generates visualizations for the test set."""
-        if self.test_loader is None:
-            print("No test loader provided for visualization.")
-            return
-        
-        os.makedirs(save_path, exist_ok=True)
-        self.model.eval()
-        for i, X_batch in enumerate(self.test_loader):
-            for key in X_batch:
-                X_batch[key] = X_batch[key].to(DEVICE, non_blocking=True)
-            Y_final, info, Y_pred = self.model(X_batch, constraints_fn=self.constraint_func)
-            trajectories_pred = Y_pred.view(Y_pred.size(0), -1, 7)[:,:,:2]  # Assuming output is (batch_size, N*2)
-            trajectories_final = Y_final.view(Y_final.size(0), -1, 7)[:,:,:2]  # Assuming output is (batch_size, N*2)
-            visualize_data_batch_2(X_batch, trajectories_pred, trajectories_final, save_path=save_path)
-            break  # Visualize only the first batch for brevity
-
     def _save_model(self, epoch: int):
         """Saves the model checkpoint."""
         if self.save_dir is not None:

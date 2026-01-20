@@ -67,8 +67,8 @@ def h(x, y, polygons, rho):
 
 def xy2xy_heading(xy):
     '''
-    input: xy: (B, N, 2)
-    output: xy_heading: (B, N+1, 3)
+    输入: xy: (B, N, 2)
+    输出: xy_heading: (B, N+1, 3)
     '''
     if not isinstance(xy, torch.Tensor):
         xy = torch.from_numpy(xy)
@@ -76,17 +76,21 @@ def xy2xy_heading(xy):
     device = xy.device
     B, N, _ = xy.shape
     
-    theta0 = torch.tensor(globalvar.vehicle_TPBV_.theta0, device=device)
     d = 0.8
+    
+    theta0 = torch.zeros((), device=device) 
+    
     last_point_x = -d * torch.cos(theta0)
     last_point_y = -d * torch.sin(theta0)
     
-    last_point = torch.tensor([last_point_x, last_point_y], device=device).view(1, 1, 2).expand(B, -1, -1)
+    last_point = torch.stack([last_point_x, last_point_y], dim=-1)
+    last_point = last_point.view(1, 1, 2).expand(B, -1, -1)
+    
     init_point = torch.zeros((B, 1, 2), device=device)
     
     traj_points = torch.cat([last_point, init_point, xy], dim=1)
 
-    h_start = torch.tensor([theta0, theta0], device=device).view(1, 2).expand(B, -1)
+    h_start = torch.zeros((B, 2), device=device)
 
     if N > 0:
         delta = traj_points[:, 3:, :] - traj_points[:, 1:-2, :]
@@ -95,12 +99,11 @@ def xy2xy_heading(xy):
         h_mid = torch.empty((B, 0), device=device)
 
     delta_end = traj_points[:, -1, :] - traj_points[:, -2, :]
-    h_end = torch.atan2(delta_end[:, 1], delta_end[:, 0]).unsqueeze(1) # (B, 1)
+    h_end = torch.atan2(delta_end[:, 1], delta_end[:, 0]).unsqueeze(1)
     
     headings = torch.cat([h_start, h_mid, h_end], dim=1)
-
     xy_heading = torch.cat([traj_points, headings.unsqueeze(2)], dim=2)
-
+    
     return xy_heading
 
 def get_safe_circle_centers(xy_heading):
@@ -198,7 +201,7 @@ def soft_constraints(xy_heading, obs_constraints_weight, obstacles_vertices, mod
     return soft_loss
     # return torch.cat([distance_violations, turning_violations, safety_distances], dim=1)  # (B, 3) if mode=='single_value' else (B, N-1 + N-2)
 
-def _create_objective_function(scale, mode='single_value', model_type='MLP'):
+def _create_objective_function():
     def objective_function(data, y):
         xy = y.view(y.shape[0], -1, 7)  # (batch_size, N, 5)
         s = xy[:, :, 2:5]  # (batch_size, N, 3)
@@ -328,7 +331,7 @@ def world_to_grid(x, y, xmin=globalvar.planning_scale_.xmin, ymin=globalvar.plan
     j = (y - ymin) / resolution
     return i, j
 
-def obj_fn(data, y, config, model_type='MLP'):
+def obj_fn(data, y, config):
     # Use the distance map
     distance_map = data['distance_map']  # (batch_size, H, W)
     target = data['target']  # (batch_size, 2)

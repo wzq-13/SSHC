@@ -4,14 +4,14 @@ seed: 42
 lr: 1.0e-3
 weight_decay: 1.0e-4
 lr_decay: 0.8
-lr_decay_step: 500 #3000
+lr_decay_step: 500
 gradient_clipping: False
 gradient_clipping_max_norm: 1.0
 lr_milestones: [300, 600, 900]
 lr_gamma: 0.8
 num_epochs: 1000
 input_dim: 66
-hidden_dim: [128, 256, 512, 768, 512] #[512, 1024, 1024, 512, 256]  [128,128]
+hidden_dim: [128, 256, 512, 768, 512]
 output_dim: 280
 num_layers: 3
 dropout: 0.0
@@ -31,6 +31,5 @@ proj_loss_weight: 200.0
 max_depth: 50
 inference_tol: 1.0e-3
 training_tol: 1.0e-3
-num_constraints: 40
 
 constraint_start_epoch: 0

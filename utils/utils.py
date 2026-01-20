@@ -6,7 +6,6 @@ from utils.prob import xy2xy_heading
 import os
 
 planning_scale_ = globalvar.planning_scale_
-hybrid_astar_ = globalvar.hybrid_astar_
 Nobs = globalvar.Nobs
 vehicle_TPBV_ = globalvar.vehicle_TPBV_
 vehicle_geometrics_ = globalvar.vehicle_geometrics_
@@ -113,51 +112,6 @@ def path_smoothness(path):
 
     return smoothness, score
 
-
-def visualize_data_batch_2(datas, trajectorys_pred, trajectorys_final, save_path=None):
-
-    os.makedirs(save_path, exist_ok=True)
-    xy_heading_pred = xy2xy_heading(trajectorys_pred)
-    xy_heading_final = xy2xy_heading(trajectorys_final)
-    for i in range(xy_heading_pred.shape[0]):
-        data = {key: datas[key][i].cpu().numpy() for key in datas}
-        trajectory_pred = xy_heading_pred[i].cpu().detach().numpy()
-        trajectory_final = xy_heading_final[i].cpu().detach().numpy()
-        obstacles_vertices = data['obstacles_vertices']
-        target = data['target']
-        plt.figure()
-        
-        terminal_point = (target[0], target[1])
-        plt.plot(terminal_point[0], terminal_point[1], 'r*', markersize=15, label='Terminal Point')
-        polygons = obstacles_vertices.reshape(-1, 4, 2)
-        for polygon in polygons:
-            plt.fill(polygon[:, 0], polygon[:, 1], 'k', alpha=0.5)
-        
-
-        plt.plot(trajectory_pred[:, 0], trajectory_pred[:, 1], '-o', label='Trajectory (Predicted)', color='blue', alpha=0.5)
-        plt.plot(trajectory_final[:, 0], trajectory_final[:, 1], '-o', label='Trajectory (Final)', color='orange', alpha=0.5)
-        # plt.scatter(trajectory[-1, 0], trajectory[-1, 1])
-
-        # rectangles = get_rect_points_vectorized(trajectory, width=globalvar.vehicle_geometrics_.vehicle_width, length=globalvar.vehicle_geometrics_.vehicle_length)
-        # for rect in rectangles:
-        #     rect = np.vstack([rect, rect[0]])
-        #     plt.plot(rect[:, 0], rect[:, 1], 'r-')
-        index = i
-        save_file = f"{save_path}/visualization_{index}.png"
-        # while os.path.exists(save_file):
-        #     index += 1
-        #     save_file = f"{save_path}/visualization_{index}.png"
-        plt.legend()
-        plt.axis('equal')
-        plt.xlim(planning_scale_.xmin, planning_scale_.xmax)
-        plt.ylim(planning_scale_.ymin, planning_scale_.ymax)
-        plt.xlabel('X (m)')
-        plt.ylabel('Y (m)')
-        plt.title('Environment Visualization')
-        if save_path:
-            plt.savefig(save_file)
-        plt.close()
-        
 
 def inpolygon(x, y, xv, yv):
     n = len(xv)

@@ -38,9 +38,9 @@ class My_Dataset(Dataset):
         if not obstacles_vertices.shape == (8, 4, 2):
             print('Error obstacles shape=', obstacles_vertices.shape, 'index=', idx)
         data = {
-            'distance_map': torch.tensor(distance_map, dtype=torch.float64),
-            'obstacles_vertices': torch.tensor(obstacles_vertices, dtype=torch.float64),
-            'target': torch.tensor(item['target'], dtype=torch.float64)
+            'distance_map': torch.tensor(distance_map, dtype=torch.float32),
+            'obstacles_vertices': torch.tensor(obstacles_vertices, dtype=torch.float32),
+            'target': torch.tensor(item['target'], dtype=torch.float32)
         }
         return data
 

@@ -1,6 +1,6 @@
 from models.neural_networks import MLP
 
-def create_model(config, model_type='MLP', device='cpu'):
+def create_model(config, device='cpu'):
     """Creates and returns a neural network model."""
     input_dim = config["input_dim"]
     output_dim = config["output_dim"]
