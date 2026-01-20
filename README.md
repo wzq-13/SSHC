@@ -1,48 +1,42 @@
-# [在此处填写您的项目名称]
+# Self-Supervised Path Planning in Unstructured Environments via Global-Guided Differentiable Hard Constraint Projection
 
-> 这是一个基于硬约束的自监督深度学习训练框架，旨在利用硬约束神经网络提升学习类算法在安全关键场景中的确定性和可靠性。
+> This is a hard-constrained self-supervised deep learning training framework, aimed at utilizing hard-constrained neural networks to improve the determinism and reliability of learning-based algorithms in safety-critical scenarios.
 
-## 🛠️ 环境准备 (Installation)
+## 🛠️ Installation
 
-在开始运行项目代码之前，请确保您的运行环境满足依赖要求。您可以通过以下命令一键安装所需库：
-
+Before running the project, please ensure your environment meets the dependency requirements. You can install the necessary libraries with the following command:
 ```bash
 pip install -r requirements.txt
 ```
+🚀 Quick Start
+The main workflow of this project strictly follows these three steps: Data Generation -> Pre-training -> Hard-constrained Training.
 
+1. Data Generation
+First, run the data generation script to prepare the training and testing datasets.
 
-## 🚀 快速开始 (Quick Start)
-本项目的主要运行流程严格遵循以下三个步骤：数据生成 -> 预训练 -> 硬约束训练。
+Default Path: Generated data will be automatically saved in the dataset/ folder within the current directory.
 
-1. 数据生成 (Data Generation)
-首先，运行数据生成脚本以准备训练集和测试集。
-
-默认路径：生成的据将自动保存在当前目录下的 dataset/ 文件夹中。
-
-修改路径：如有需要，您可以在脚本中修改保存路径配置。
-
+Custom Path: If needed, you can modify the save path configuration directly in the script.
 ```bash
 python data_generator.py
 ```
-2. 模型预训练 (Pre-training)
-数据准备完成后，使用预训练脚本对模型进行初始化。这一步旨在让模型学习基础特征，为后续的约束训练做准备。
+2. Pre-training
+Once the data is ready, use the pre-training script to initialize the model. This step allows the model to learn fundamental features, preparing it for the subsequent constraint-based training.
 ```bash
 python pre_train.py
 ```
-
-3. 硬约束训练 (Hard-constrained Training)
-最后，运行主训练脚本。此阶段将在预训练的基础上，进行带有硬约束 (Hard Constraints) 的模型优化。
+3. Hard-constrained Training
+Finally, run the main training script. Based on the pre-trained model, this phase performs optimization with Hard Constraints.
 ```bash
 python train.py
 ```
+📂 File Structure
+data_generator.py: Data generation script
 
-## 📂 文件结构说明
-data_generator.py: 数据生成脚本
+pre_train.py: Pre-training script
 
-pre_train.py: 预训练脚本
+train.py: Main training script with hard constraints
 
-train.py: 带有硬约束的主训练脚本
+requirements.txt: List of project dependencies
 
-requirements.txt: 项目依赖环境列表
-
-dataset/: 默认的数据存储目录（运行生成器后创建）
+dataset/: Default directory for data storage (created after running the generator)
