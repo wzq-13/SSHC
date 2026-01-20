@@ -8,7 +8,8 @@ Before running the project, please ensure your environment meets the dependency 
 ```bash
 pip install -r requirements.txt
 ```
-🚀 Quick Start
+## 🚀 Quick Start
+
 The main workflow of this project strictly follows these three steps: Data Generation -> Pre-training -> Hard-constrained Training.
 
 1. Data Generation
@@ -30,7 +31,8 @@ Finally, run the main training script. Based on the pre-trained model, this phas
 ```bash
 python train.py
 ```
-📂 File Structure
+## 📂 File Structure
+
 data_generator.py: Data generation script
 
 pre_train.py: Pre-training script
