@@ -34,6 +34,16 @@ Finally, run the main training script. Based on the pre-trained model, this phas
 ```bash
 python train.py
 ```
+## 4. Customization for Other Problems
+
+To adapt this framework to other constrained optimization tasks, you can customize the problem definitions by modifying `utils/prob.py` and the corresponding loss functions:
+
+* **`_create_objective_function`**: Define the **Hard Constraints** here. This function should return the degree of violation for each specific constraint.
+* **`soft_constraints`**: Define the **Soft Constraints** used primarily during the **Pre-training** phase to help the model converge toward feasible regions.
+* **Loss Function**: Update the loss calculation in the training scripts to ensure it effectively minimizes the violation values returned by the functions above.
+
+By decoupling the constraint logic from the training process, you can easily extend this project to handle various types of constrained problems.
+
 ## 📂 File Structure
 
 data_generator.py: Data generation script
