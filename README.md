@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 The main workflow of this project strictly follows these three steps: Data Generation -> Pre-training -> Hard-constrained Training.
 
-1. Data Generation
+## 1. Data Generation
 
 First, run the data generation script to prepare the training and testing datasets.
 
@@ -22,13 +22,13 @@ Custom Path: If needed, you can modify the save path configuration directly in t
 ```bash
 python data_generator.py
 ```
-2. Pre-training
+## 2. Pre-training
 
 Once the data is ready, use the pre-training script to initialize the model. This step allows the model to learn fundamental features, preparing it for the subsequent constraint-based training.
 ```bash
 python pre_train.py
 ```
-3. Hard-constrained Training
+## 3. Hard-constrained Training
 
 Finally, run the main training script. Based on the pre-trained model, this phase performs optimization with Hard Constraints.
 ```bash
