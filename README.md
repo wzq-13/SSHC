@@ -22,17 +22,21 @@ Custom Path: If needed, you can modify the save path configuration directly in t
 ```bash
 python data_generator.py
 ```
-## 2. Pre-training
+## 2. Training & Test
 
-Once the data is ready, use the pre-training script to initialize the model. This step allows the model to learn fundamental features, preparing it for the subsequent constraint-based training.
+Once the data is ready, use the pre-training script to initialize the model. This step allows the model to learn fundamental features, preparing it for the subsequent constraint-based training. Add `--save_dir SAVE_DIR --log_dir LOG_DIR` to specify the model save path and log path or leave it blank to use the default value.
 ```bash
-python pre_train.py
+python train.py --mode pre_train
 ```
-## 3. Hard-constrained Training
-
-Finally, run the main training script. Based on the pre-trained model, this phase performs optimization with Hard Constraints.
+Based on the pre-trained model, the second phase performs optimization with Hard Constraints. Use `--load_dir LOAD_DIR` to load the model saved in the first stage.
 ```bash
-python train.py
+python train.py --mode train --load_dir LOAD_DIR
+
+```
+To test model performance, you can run the following command. Use `--load_dir LOAD_DIR` to load the target model.
+```bash
+python train.py --mode test --load_dir LOAD_DIR
+
 ```
 ## 4. Customization for Other Problems
 
