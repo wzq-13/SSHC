@@ -301,7 +301,9 @@ class ENFORCE_Trainer:
             'objective_distance': min_distance
         }
         
-    def test(self, data_loader: DataLoader) -> Dict[str, float]:
+    def test(self, data_loader=None) -> Dict[str, float]:
+        if data_loader is None:
+            data_loader = self.test_loader
         self.model.eval()
         total_samples = 0
         if not os.path.exists(RESULT_DIR):
