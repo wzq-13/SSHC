@@ -27,7 +27,7 @@ from agents.navigation.controller import VehiclePIDController
 RENDER = True
 RESULT_DIR = None
 PATH_LOG_DIR = None
-ENVS_DIR = '/home/qian/dataset_V7/'
+ENVS_DIR = 'dataset/'
 SIM_COLLISION = 0
 RAW_COLLISION = 0
 MAX_SPEED = 18
@@ -303,7 +303,7 @@ def generate_path(index, method='hard', file_list=None):
         path_numpy = path_numpy[::-1]
         path_numpy = smooth_path(path_numpy, smoothing_factor=0.5)
     elif method == 'Astar':
-        path_data_dir = f'/home/qian/dataset_V7_labels_5'
+        path_data_dir = f'dataset_label'
         file_name = file_list[index]
         path_data_file = f'{path_data_dir}/{file_name}'
         path_numpy = np.load(path_data_file, allow_pickle=True)['path']

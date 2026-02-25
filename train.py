@@ -7,18 +7,22 @@ from torch.utils.data import DataLoader, Dataset, random_split
 import numpy as np
 import random
 import argparse
+import os
 def main():
     parser = argparse.ArgumentParser(description="ENFORCE Trainer/Tester")
     parser.add_argument('--mode', type=str, default='train', choices=['pre_train','train', 'test'],
                         help="pre_train or train or test")
-    parser.add_argument('--save_dir', type=str, default=None,
+    parser.add_argument('--save_dir', type=str, default='./checkpoints',
                         help="Directory to save the model checkpoints")
     parser.add_argument('--load_dir', type=str, default=None,
                         help="Directory to load the model checkpoints")
-    parser.add_argument('--log_dir', type=str, default=None,
+    parser.add_argument('--log_dir', type=str, default='./logs',
                         help="Directory to save the training logs")
     args = parser.parse_args()
-    
+
+    os.makedirs(args.save_dir, exist_ok=True)
+    os.makedirs(args.log_dir, exist_ok=True)
+
     config_path = 'configs/default.yaml'
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
