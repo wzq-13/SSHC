@@ -38,7 +38,7 @@ To test model performance, you can run the following command. Use `--load_dir LO
 python train.py --mode test --load_dir LOAD_DIR
 
 ```
-## 4. Customization for Other Problems
+## 3. Customization for Other Problems
 
 To adapt this framework to other constrained optimization tasks, you can customize the problem definitions by modifying `utils/prob.py` and the corresponding loss functions:
 
