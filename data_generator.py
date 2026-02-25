@@ -793,6 +793,7 @@ def deal_single_frame(index):
 if __name__ == "__main__":
     num = 200000
     cpu_num = multiprocessing.cpu_count()
+    os.makedirs('./dataset', exist_ok=True)
     indexs = [randint(0, num) for _ in range(cpu_num - 1)]
     with multiprocessing.Pool(processes=cpu_num - 1) as pool:
         pool.map(deal_single_frame, indexs)

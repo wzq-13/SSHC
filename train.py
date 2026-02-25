@@ -27,7 +27,7 @@ def main():
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     batch_size = 512
-    data_dir = '/home/qian/dataset_V7/'
+    data_dir = './dataset'
     dataset = My_Dataset(data_dir=data_dir, length=200000)
     train_size = int(len(dataset) * 0.6)
     val_size = int((len(dataset) * 0.3))
